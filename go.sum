@@ -1,0 +1,4 @@
+github.com/catalinc/hashcash v0.0.0-20220723060415-5e3ec3e24f67 h1:fz1wNIGLjuN+0PGJa8K4dwdM8J+3C3zS++VlT/sKF14=
+github.com/catalinc/hashcash v0.0.0-20220723060415-5e3ec3e24f67/go.mod h1:ldWL6buwYCK4VqIkLbZuFbGUoJceSafm8duCEQYw9Jw=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
