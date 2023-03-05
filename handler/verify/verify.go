@@ -41,29 +41,23 @@ func (handler *Handler) Handler(conn net.Conn) error {
 	if n, err := conn.Write(puzzle); err != nil {
 		return errors.Wrap(err, "conn.Write(key)")
 	} else if n != 64 {
-		// I decided to trigger this error as if the client do not receive the whole puzzle
+		// I decided to trigger this error as if the client doesn't receive the whole puzzle
 		// then chances are low the client will send something correct
 		return fmt.Errorf("n != 64")
 	}
 
-	readResolvedPuzzle := make([]byte, 104)
-	if _, err := conn.Read(readResolvedPuzzle); err != nil {
-		return errors.Wrap(err, "conn.Read(readResolvedPuzzle)")
+	resolvedPuzzle := make([]byte, 104)
+	if n, err := conn.Read(resolvedPuzzle); err != nil {
+		return errors.Wrap(err, "conn.Read(resolvedPuzzle)")
+	} else {
+		resolvedPuzzle = resolvedPuzzle[:n]
 	}
-
-	resolvedPuzzleFields := bytes.Fields(readResolvedPuzzle)
-
-	if len(resolvedPuzzleFields) == 0 {
-		return fmt.Errorf("len(resolvedPuzzleFields) == 0")
-	}
-
-	resolvedPuzzle := resolvedPuzzleFields[0]
 
 	if len(resolvedPuzzle) == 0 {
 		return fmt.Errorf("len(resolvedPuzzle) == 0")
 	}
 
-	hasSolvedPuzzleOurPuzzle := bytes.Contains(readResolvedPuzzle, puzzle)
+	hasSolvedPuzzleOurPuzzle := bytes.Contains(resolvedPuzzle, puzzle)
 	isSolvedPuzzleCorrect := handler.validator.Check(string(resolvedPuzzle))
 
 	if hasSolvedPuzzleOurPuzzle && isSolvedPuzzleCorrect {

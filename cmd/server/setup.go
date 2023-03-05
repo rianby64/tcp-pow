@@ -37,6 +37,11 @@ func createLogAndConfig() (*log.Logger, *Config) {
 		log.Panicf("env.Parse(&cfg): %v", err)
 	}
 
+	log.Printf("ADDRESS=%v", cfg.Address)
+	log.Printf("LEADING_BYTES=%v", cfg.LeadingBytes)
+	log.Printf("SALT_SIZE=%v", cfg.SaltSize)
+	log.Printf("QUOTES_PATH=%v", cfg.QuotesPath)
+
 	return log, cfg
 }
 
