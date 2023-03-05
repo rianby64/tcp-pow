@@ -10,11 +10,11 @@ import (
 
 func main() {
 	log, cfg := createLogAndConfig()
-	hashcash := hashcash.New(cfg.LeadingBytes, cfg.SaltSize, "")
+	hashcash := hashcash.New(cfg.LeadingBits, cfg.SaltSize, "")
 	book := book.New(cfg.QuotesPath, log)
 
 	handlerQuotes := quotes.New(book)
-	handlerVerify := verify.New(hashcash)
+	handlerVerify := verify.New(hashcash, cfg.KeySize, cfg.LeadingBits, cfg.SaltSize)
 
 	server := server.New(log)
 	server.RegisterHandler("verify", handlerVerify)

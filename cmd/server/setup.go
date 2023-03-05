@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	shutdownTimeout = time.Second * 100
+	shutdownTimeout = time.Second * 30
 )
 
 type Shutdown interface {
@@ -23,10 +23,11 @@ type Shutdown interface {
 }
 
 type Config struct {
-	Address      string `env:"ADDRESS,required"`
-	LeadingBytes uint   `env:"LEADING_BYTES,required"`
-	SaltSize     uint   `env:"SALT_SIZE,required"`
-	QuotesPath   string `env:"QUOTES_PATH,required"`
+	Address     string `env:"ADDRESS,required"`
+	LeadingBits uint   `env:"LEADING_BITS,required"`
+	SaltSize    uint   `env:"SALT_SIZE,required"`
+	KeySize     int    `env:"KEY_SIZE" envDefault:"64"`
+	QuotesPath  string `env:"QUOTES_PATH,required"`
 }
 
 func createLogAndConfig() (*log.Logger, *Config) {
@@ -38,7 +39,7 @@ func createLogAndConfig() (*log.Logger, *Config) {
 	}
 
 	log.Printf("ADDRESS=%v", cfg.Address)
-	log.Printf("LEADING_BYTES=%v", cfg.LeadingBytes)
+	log.Printf("LEADING_BITS=%v", cfg.LeadingBits)
 	log.Printf("SALT_SIZE=%v", cfg.SaltSize)
 	log.Printf("QUOTES_PATH=%v", cfg.QuotesPath)
 
@@ -72,11 +73,17 @@ func shutdown(log *log.Logger, items ...Shutdown) {
 func listen(server *server.Server, log *log.Logger, address string) {
 	log.Printf("Listening at %s", address)
 
-	if err := server.Listen(address); err != nil {
-		if !errors.Is(err, net.ErrClosed) {
-			shutdown(log, server)
+	err := server.Listen(address)
 
-			log.Panicf("server.Listen(%s): %v", address, err)
-		}
+	if errors.Is(err, net.ErrClosed) {
+		log.Printf("Listener closed")
+
+		return
+	}
+
+	if err != nil {
+		shutdown(log, server)
+
+		log.Panicf("server.Listen(%s): %v", address, err)
 	}
 }

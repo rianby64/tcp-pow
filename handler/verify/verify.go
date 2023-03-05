@@ -3,11 +3,13 @@ package verify
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"math/rand"
 	"net"
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/rianby64/tcp-pow/models"
 )
 
 const (
@@ -32,21 +34,23 @@ type Validator interface {
 }
 
 type Handler struct {
-	validator Validator
+	validator       Validator
+	keySize         int
+	maxLengthKeyMsg int
 }
 
 func (handler *Handler) Handler(conn net.Conn) error {
-	puzzle := GenerateKey(64)
+	puzzle := GenerateKey(handler.keySize)
 
 	if n, err := conn.Write(puzzle); err != nil {
 		return errors.Wrap(err, "conn.Write(key)")
-	} else if n != 64 {
-		// I decided to trigger this error as if the client doesn't receive the whole puzzle
+	} else if n != len(puzzle) {
+		// I decided to trigger this error because if the client doesn't receive the whole puzzle
 		// then chances are low the client will send something correct
-		return fmt.Errorf("n != 64")
+		return errors.Wrapf(models.ErrIncorrect, "n(%d) != %d", n, len(puzzle))
 	}
 
-	resolvedPuzzle := make([]byte, 104)
+	resolvedPuzzle := make([]byte, handler.maxLengthKeyMsg)
 	if n, err := conn.Read(resolvedPuzzle); err != nil {
 		return errors.Wrap(err, "conn.Read(resolvedPuzzle)")
 	} else {
@@ -54,7 +58,7 @@ func (handler *Handler) Handler(conn net.Conn) error {
 	}
 
 	if len(resolvedPuzzle) == 0 {
-		return fmt.Errorf("len(resolvedPuzzle) == 0")
+		return errors.Wrap(models.ErrEmpty, "len(resolvedPuzzle) == 0")
 	}
 
 	hasSolvedPuzzleOurPuzzle := bytes.Contains(resolvedPuzzle, puzzle)
@@ -64,13 +68,33 @@ func (handler *Handler) Handler(conn net.Conn) error {
 		return nil
 	}
 
-	return fmt.Errorf("incorrect puzzle")
+	return errors.Wrapf(models.ErrIncorrect,
+		"hasSolvedPuzzleOurPuzzle(%t) && isSolvedPuzzleCorrect(%t)",
+		hasSolvedPuzzleOurPuzzle, isSolvedPuzzleCorrect,
+	)
 }
 
-func New(validator Validator) *Handler {
+func New(validator Validator, keySize int, leadingBits, saltSize uint) *Handler {
 	rand.Seed(time.Now().Unix())
 
+	difficultySize := len(fmt.Sprint(leadingBits))
+	extraSize := 0
+	versionSize := len("1")
+	separatorSize := len(":")
+	dateFormatSize := len("060102")
+	nonceSize := len(fmt.Sprintf("%x", math.MaxInt))
+
+	maxLengthKeyMsg := versionSize + separatorSize +
+		difficultySize + separatorSize +
+		dateFormatSize + separatorSize +
+		keySize + separatorSize +
+		extraSize + separatorSize +
+		int(saltSize) + separatorSize +
+		nonceSize
+
 	return &Handler{
-		validator: validator,
+		validator:       validator,
+		keySize:         keySize,
+		maxLengthKeyMsg: maxLengthKeyMsg,
 	}
 }

@@ -3,7 +3,8 @@ package models
 import "errors"
 
 var (
-	ErrEmpty = errors.New("is empty")
+	ErrEmpty     = errors.New("is empty")
+	ErrIncorrect = errors.New("is incorrect")
 )
 
 type Quote struct {
