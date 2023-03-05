@@ -16,7 +16,7 @@ func main() {
 	handlerQuotes := quotes.New(book)
 	handlerVerify := verify.New(hashcash, cfg.KeySize, cfg.LeadingBits, cfg.SaltSize)
 
-	server := server.New(log)
+	server := server.New(log, cfg.ProcessTimeoutSecs)
 	server.RegisterHandler("verify", handlerVerify)
 	server.RegisterHandler("quote", handlerQuotes)
 

@@ -23,11 +23,12 @@ type Shutdown interface {
 }
 
 type Config struct {
-	Address     string `env:"ADDRESS,required"`
-	LeadingBits uint   `env:"LEADING_BITS,required"`
-	SaltSize    uint   `env:"SALT_SIZE,required"`
-	KeySize     int    `env:"KEY_SIZE" envDefault:"64"`
-	QuotesPath  string `env:"QUOTES_PATH,required"`
+	Address            string `env:"ADDRESS,required"`
+	LeadingBits        uint   `env:"LEADING_BITS,required"`
+	SaltSize           uint   `env:"SALT_SIZE,required"`
+	KeySize            int    `env:"KEY_SIZE" envDefault:"64"`
+	ProcessTimeoutSecs int    `env:"PROCESS_TIMEOUT_SECS" envDefault:"2"`
+	QuotesPath         string `env:"QUOTES_PATH,required"`
 }
 
 func createLogAndConfig() (*log.Logger, *Config) {
@@ -41,6 +42,8 @@ func createLogAndConfig() (*log.Logger, *Config) {
 	log.Printf("ADDRESS=%v", cfg.Address)
 	log.Printf("LEADING_BITS=%v", cfg.LeadingBits)
 	log.Printf("SALT_SIZE=%v", cfg.SaltSize)
+	log.Printf("KEY_SIZE=%v", cfg.KeySize)
+	log.Printf("PROCESS_TIMEOUT_SECS=%v", cfg.ProcessTimeoutSecs)
 	log.Printf("QUOTES_PATH=%v", cfg.QuotesPath)
 
 	return log, cfg
