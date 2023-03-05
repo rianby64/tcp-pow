@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net"
+	"sync"
 )
 
 const (
@@ -27,8 +28,9 @@ type Logger interface {
 
 type Server struct {
 	registredHandlers registredHandlers
-
-	log Logger
+	listener          net.Listener
+	processingUsers   *sync.WaitGroup
+	log               Logger
 }
 
 func (server *Server) handler(conn net.Conn) {
@@ -44,24 +46,6 @@ func (server *Server) handler(conn net.Conn) {
 
 			return
 		}
-	}
-}
-
-func (server *Server) Listen(address string) {
-	listener, err := net.Listen(network, address)
-	if err != nil {
-		log.Panicf("net.Listen(network=%s, address=%s): %v", network, address, err)
-	}
-
-	log.Printf("Listening at [%s]%s", network, address)
-
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Printf("listener.Accept(): %v", err)
-		}
-
-		go server.handler(conn)
 	}
 }
 
