@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -73,6 +74,8 @@ func (handler *Handler) Handler(conn net.Conn) error {
 }
 
 func New(validator Validator) *Handler {
+	rand.Seed(time.Now().Unix())
+
 	return &Handler{
 		validator: validator,
 	}
