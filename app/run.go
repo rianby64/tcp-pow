@@ -30,10 +30,10 @@ func waitSignalShutdown() <-chan os.Signal {
 	return signalShutdown
 }
 
-func shutdown(log *log.Logger, shutdownTimeout time.Duration, items ...Shutdown) {
+func shutdown(ctx context.Context, log *log.Logger, shutdownTimeout time.Duration, items ...Shutdown) {
 	log.Printf("shutting down")
 
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	ctx, cancel := context.WithTimeout(ctx, shutdownTimeout)
 
 	defer cancel()
 
@@ -46,10 +46,9 @@ func shutdown(log *log.Logger, shutdownTimeout time.Duration, items ...Shutdown)
 	log.Printf("shutdown completed")
 }
 
-func listen(server *server.Server, log *log.Logger, address string, shutdownTimeout time.Duration) <-chan error {
+func listen(ctx context.Context, server *server.Server, log *log.Logger, address string, shutdownTimeout time.Duration) <-chan error {
 	log.Printf("Listening at %s", address)
 
-	ctx := context.Background()
 	errChan := make(chan error, 1)
 
 	go func() {
@@ -83,12 +82,13 @@ func Run() error {
 	server.RegisterHandler("quote", handlerQuotes)
 
 	shutdownTimeout := time.Duration(cfg.ShutdownTimeoutSecs) * time.Second
+	rootCtx := context.Background()
 
-	defer shutdown(log, shutdownTimeout, server)
+	defer shutdown(rootCtx, log, shutdownTimeout, server)
 
 	select {
-	case err := <-listen(server, log, cfg.Address, shutdownTimeout):
-		return errors.Wrapf(err, "listen(server, log, cfg.Address=%s, shutdownTimeout=%v)", cfg.Address, shutdownTimeout)
+	case err := <-listen(rootCtx, server, log, cfg.Address, shutdownTimeout):
+		return errors.Wrapf(err, "listen(ctx, server, log, cfg.Address=%s, shutdownTimeout=%v)", cfg.Address, shutdownTimeout)
 	case <-waitSignalShutdown():
 		log.Printf("waitSignalShutdown received")
 
