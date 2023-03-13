@@ -1,7 +1,13 @@
 package main
 
-import "github.com/rianby64/tcp-pow/app"
+import (
+	"log"
+
+	"github.com/rianby64/tcp-pow/app"
+)
 
 func main() {
-	app.Run()
+	if err := app.Run(); err != nil {
+		log.Panic(err)
+	}
 }

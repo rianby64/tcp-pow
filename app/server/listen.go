@@ -44,7 +44,7 @@ func (server *Server) Listen(ctx context.Context, address string) error {
 
 	listener, err := lc.Listen(ctx, network, address)
 	if err != nil {
-		return errors.Wrapf(err, "net.Listen(network=%s, address=%s): %v", network, address, err)
+		return errors.Wrapf(err, "net.Listen(network=%s, address=%s)", network, address)
 	}
 
 	server.listener = listener

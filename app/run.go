@@ -69,7 +69,7 @@ func listen(server *server.Server, log *log.Logger, address string, shutdownTime
 	return errChan
 }
 
-func Run() {
+func Run() error {
 	log, cfg := config.CreateLogAndConfig()
 
 	hashcash := hashcash.New(cfg.LeadingBits, cfg.SaltSize, "")
@@ -88,10 +88,10 @@ func Run() {
 
 	select {
 	case err := <-listen(server, log, cfg.Address, shutdownTimeout):
-		if err != nil {
-			log.Panicf("listener: %v", err)
-		}
+		return errors.Wrapf(err, "listen(server, log, cfg.Address=%s, shutdownTimeout=%v)", cfg.Address, shutdownTimeout)
 	case <-waitSignalShutdown():
 		log.Printf("waitSignalShutdown received")
+
+		return nil
 	}
 }
