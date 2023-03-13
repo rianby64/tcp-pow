@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/rianby64/tcp-pow/models"
+	"github.com/rianby64/tcp-pow/app/models"
 )
 
 type Logger interface {

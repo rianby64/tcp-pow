@@ -13,14 +13,14 @@ func (server *Server) Shutdown(ctx context.Context) (err error) {
 	allDone := make(chan struct{}, 1)
 
 	go func() {
-		server.processingUsers.Wait()
+		server.wgCurrentHandling.Wait()
 
 		allDone <- struct{}{}
 	}()
 
 	select {
 	case <-ctx.Done():
-		return
+		return ctx.Err()
 	case <-allDone:
 		return
 	}

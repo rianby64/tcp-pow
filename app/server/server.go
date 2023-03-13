@@ -30,43 +30,19 @@ type Logger interface {
 type Server struct {
 	registredHandlers registredHandlers
 	listener          net.Listener
-	processingUsers   *sync.WaitGroup
 	processTimeout    time.Duration
 	log               Logger
+
+	wgCurrentHandling *sync.WaitGroup
 }
 
 func (server *Server) handler(conn net.Conn) {
-	defer func() {
-		if err := conn.Close(); err != nil {
-			log.Printf("conn.Close(): %v", err)
+	for _, item := range server.registredHandlers {
+		if err := item.handler.Handler(conn); err != nil {
+			log.Printf("(%s) handler.Handler(conn): %v", item.name, err)
+
+			return
 		}
-	}()
-
-	done := make(chan struct{}, 1)
-
-	go func() {
-		defer func() {
-			done <- struct{}{}
-		}()
-
-		for _, item := range server.registredHandlers {
-			if err := item.handler.Handler(conn); err != nil {
-				log.Printf("(%s) handler.Handler(conn): %v", item.name, err)
-
-				return
-			}
-		}
-	}()
-
-	select {
-	case <-done:
-		log.Printf("done")
-
-		return
-	case <-time.After(server.processTimeout):
-		log.Printf("timeout ocurred")
-
-		return
 	}
 }
 
@@ -82,5 +58,7 @@ func New(log Logger, processTimeoutSecs int) *Server {
 		registredHandlers: make(registredHandlers, 0),
 		processTimeout:    time.Duration(processTimeoutSecs) * time.Second,
 		log:               log,
+
+		wgCurrentHandling: &sync.WaitGroup{},
 	}
 }

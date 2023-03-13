@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/rianby64/tcp-pow/models"
+	"github.com/rianby64/tcp-pow/app/models"
 )
 
 const (

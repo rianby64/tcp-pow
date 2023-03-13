@@ -50,7 +50,7 @@ func Generate(leadingBits, saltLength uint, data string) (string, error) {
 	return stamp, nil
 }
 
-func readMsg(conn net.Conn) ([]byte, error) {
+func readQuote(conn net.Conn) ([]byte, error) {
 	var msg []byte
 
 	chunk := make([]byte, sizeReadBytes)
@@ -107,7 +107,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	quote, err := readMsg(conn)
+	quote, err := readQuote(conn)
 	if err != nil {
 		log.Panic(err)
 	}
